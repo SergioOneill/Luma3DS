@@ -45,20 +45,20 @@
 Menu rosalinaMenu = {
     "Rosalina menu",
     {
-        { "Take screenshot", METHOD, .method = &RosalinaMenu_TakeScreenshot },
-        { "Change screen brightness", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
-        { "Cheats...", METHOD, .method = &RosalinaMenu_Cheats },
+        { "Hacer captura de pantalla", METHOD, .method = &RosalinaMenu_TakeScreenshot },
+        { "Cambiar brillo de pantalla", METHOD, .method = &RosalinaMenu_ChangeScreenBrightness },
+        { "Trucos...", METHOD, .method = &RosalinaMenu_Cheats },
         { "", METHOD, .method = PluginLoader__MenuCallback},
-        { "Process list", METHOD, .method = &RosalinaMenu_ProcessList },
-        { "Debugger options...", MENU, .menu = &debuggerMenu },
-        { "System configuration...", MENU, .menu = &sysconfigMenu },
-        { "Screen filters...", MENU, .menu = &screenFiltersMenu },
+        { "Lista de Procesos", METHOD, .method = &RosalinaMenu_ProcessList },
+        { "Opciones de depuracion...", MENU, .menu = &debuggerMenu },
+        { "Configuracion del sistema...", MENU, .menu = &sysconfigMenu },
+        { "Filtros de pantalla...", MENU, .menu = &screenFiltersMenu },
         { "New 3DS menu...", MENU, .menu = &N3DSMenu, .visibility = &menuCheckN3ds },
-        { "Miscellaneous options...", MENU, .menu = &miscellaneousMenu },
-        { "Power off", METHOD, .method = &RosalinaMenu_PowerOff },
-        { "Reboot", METHOD, .method = &RosalinaMenu_Reboot },
-        { "Credits", METHOD, .method = &RosalinaMenu_ShowCredits },
-        { "Debug info", METHOD, .method = &RosalinaMenu_ShowDebugInfo, .visibility = &rosalinaMenuShouldShowDebugInfo },
+        { "Opciones Miscellaneas...", MENU, .menu = &miscellaneousMenu },
+        { "Apagar", METHOD, .method = &RosalinaMenu_PowerOff },
+        { "Reiniciar", METHOD, .method = &RosalinaMenu_Reboot },
+        { "Creditos", METHOD, .method = &RosalinaMenu_ShowCredits },
+        { "Informacion de depuracion", METHOD, .method = &RosalinaMenu_ShowDebugInfo, .visibility = &rosalinaMenuShouldShowDebugInfo },
         {},
     }
 };
@@ -93,7 +93,7 @@ void RosalinaMenu_ShowDebugInfo(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Rosalina -- Debug info");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Rosalina -- informacion de depuracion");
 
         u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, memoryMap);
         posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Kernel ext PA: %08lx - %08lx\n\n", kextPa, kextPa + kextSize);
@@ -113,7 +113,7 @@ void RosalinaMenu_ShowDebugInfo(void)
         {
             u32 clkDiv = 1 << (1 + (speedInfo.sdClkCtrl & 0xFF));
             posY = Draw_DrawFormattedString(
-                10, posY, COLOR_WHITE, "SDMC speed: HS=%d %lukHz\n",
+                10, posY, COLOR_WHITE, "Velocidad de SD: HS=%d %lukHz\n",
                 (int)speedInfo.highSpeedModeEnabled, SYSCLOCK_SDMMC / (1000 * clkDiv)
             );
         }
@@ -121,7 +121,7 @@ void RosalinaMenu_ShowDebugInfo(void)
         {
             u32 clkDiv = 1 << (1 + (speedInfo.sdClkCtrl & 0xFF));
             posY = Draw_DrawFormattedString(
-                10, posY, COLOR_WHITE, "NAND speed: HS=%d %lukHz\n",
+                10, posY, COLOR_WHITE, "Velocidad de la NAND: HS=%d %lukHz\n",
                 (int)speedInfo.highSpeedModeEnabled, SYSCLOCK_SDMMC / (1000 * clkDiv)
             );
         }
@@ -175,8 +175,8 @@ void RosalinaMenu_Reboot(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Reboot");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to reboot, press B to go back.");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Reiniciar");
+        Draw_DrawString(10, 30, COLOR_WHITE, "Pula [A] para reiniciar, pulsa [B] para volver atras.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
@@ -209,23 +209,23 @@ void RosalinaMenu_ChangeScreenBrightness(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Screen brightness");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Brillo de pantalla");
         u32 posY = 30;
         posY = Draw_DrawFormattedString(
             10,
             posY,
             COLOR_WHITE,
-            "Current luminance: %lu (min. %lu, max. %lu)\n\n",
+            "Brillo actual: %lu (min. %lu, max. %lu)\n\n",
             luminance,
             minLum,
             maxLum
         );
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Controls: Up/Down for +-1, Right/Left for +-10.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Press A to start, B to exit.\n\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Controless: Arriba/Abajo para +-1, Derecha/Izquierda para +-10.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "Pulsa [A] para iniciar, [B] para salir.\n\n");
 
-        posY = Draw_DrawString(10, posY, COLOR_RED, "WARNING: \n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * value will be limited by the presets.\n");
-        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * bottom framebuffer will be restored until\nyou exit.");
+        posY = Draw_DrawString(10, posY, COLOR_RED, "AVISO: \n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * El valor estara limitado por los\najustes preestablecidos.\n");
+        posY = Draw_DrawString(10, posY, COLOR_WHITE, "  * El framebuffer inferior se restaurara\ncuando salgas.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
@@ -302,8 +302,8 @@ void RosalinaMenu_PowerOff(void) // Soft shutdown.
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Power off");
-        Draw_DrawString(10, 30, COLOR_WHITE, "Press A to power off, press B to go back.");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Apagar");
+        Draw_DrawString(10, 30, COLOR_WHITE, "Pulsa [A] para apagar, pulsa [B] para volver.");
         Draw_FlushFramebuffer();
         Draw_Unlock();
 
@@ -482,17 +482,17 @@ end:
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Screenshot");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Captura de pantalla");
         if(R_FAILED(res))
-            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%08lx).", (u32)res);
+            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operacion fallida (0x%08lx).", (u32)res);
         else
         {
             u32 t1 = (u32)(1000 * timeSpentConvertingScreenshot / SYSCLOCK_ARM11);
             u32 t2 = (u32)(1000 * timeSpentWritingScreenshot / SYSCLOCK_ARM11);
             u32 posY = 30;
-            posY = Draw_DrawString(10, posY, COLOR_WHITE, "Operation succeeded.\n\n");
-            posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Time spent converting:    %5lums\n", t1);
-            posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Time spent writing files: %5lums\n", t2);
+            posY = Draw_DrawString(10, posY, COLOR_WHITE, "Operacion exitosa\n\n");
+            posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Tiempo transcurrido:    %5lums\n", t1);
+            posY = Draw_DrawFormattedString(10, posY, COLOR_WHITE, "Tiempo guardando: %5lums\n", t2);
         }
 
         Draw_FlushFramebuffer();

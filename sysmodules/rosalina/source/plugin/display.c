@@ -3,7 +3,7 @@
 #include "draw.h"
 #include <stdio.h>
 
-static const char *__press_b_to_close = "Press [B] to close";
+static const char *__press_b_to_close = "Pulsa [B] para cerrar.";
 
 void    DispMessage(const char *title, const char *message)
 {
@@ -34,7 +34,7 @@ u32    DispErrMessage(const char *title, const char *message, const Result error
 {
     char buf[100];
 
-    sprintf(buf, "Error code: 0x%08lX", error);
+    sprintf(buf, "Codigo error: 0x%08lX", error);
     menuEnter();
 
     Draw_Lock();
@@ -67,10 +67,10 @@ u32     DispWarningOnHome(void)
     Draw_ClearFramebuffer();
     Draw_FlushFramebuffer();
 
-    Draw_DrawString(10, 10, COLOR_TITLE, "Warning");
+    Draw_DrawString(10, 10, COLOR_TITLE, "ATENCION");
 
-    u32 posY = Draw_DrawString(30, 40, COLOR_WHITE, "Due to memory shortage the home button\nis disabled.");
-    Draw_DrawString(30, posY + 20, COLOR_WHITE, "Press [DPAD UP + B] to exit the application.");
+    u32 posY = Draw_DrawString(30, 40, COLOR_WHITE, "Debido a falta de momoria el boton HOME\nse ha deshabilitado.");
+    Draw_DrawString(30, posY + 20, COLOR_WHITE, "Pulsa [DPAD Arriba + B] para salir de la app.");
     Draw_DrawString(200, 220, COLOR_TITLE, __press_b_to_close);
 
 

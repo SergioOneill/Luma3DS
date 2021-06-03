@@ -63,8 +63,8 @@ void        PluginLoader__UpdateMenu(void)
 {
     static const char *status[2] =
     {
-        "Plugin Loader: [Disabled]",
-        "Plugin Loader: [Enabled]"
+        "Plugin Loader: [Desactivado]",
+        "Plugin Loader: [Activado]"
     };
 
     rosalinaMenu.items[3].title = status[PluginLoaderCtx.isEnabled];
@@ -303,9 +303,9 @@ void     PluginLoader__HandleCommands(void *_ctx)
                 error(cmdbuf, 0xD9001830);
                 break;
             }
-            
+
             g_blockMenuOpen = cmdbuf[1];
-            
+
             cmdbuf[0] = IPC_MakeHeader(11, 1, 0);
             cmdbuf[1] = 0;
             break;
@@ -369,7 +369,7 @@ void     PluginLoader__HandleCommands(void *_ctx)
                 Reset_3gx_DecParams();
                 break;
             }
-            
+
             ctx->isExeDecFunctionset = true;
 
             svcInvalidateEntireInstructionCache(); // Could use the range one

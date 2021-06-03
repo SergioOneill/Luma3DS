@@ -63,9 +63,9 @@ Result      MemoryBlock__IsReady(void)
     if (R_FAILED(res)) {
         PluginLoader__DisableNotificationLED();
         if (isN3DS)
-            PluginLoader__Error("Cannot map plugin memory.", res);
+            PluginLoader__Error("No se pudo mapear la memoria del Plugin.", res);
         else
-            PluginLoader__Error("A console reboot is needed to\nclose extended memory games.\n\nPress [B] to reboot.", res);
+            PluginLoader__Error("El reinicio de la consola es necesario para\ncerrar juegos de memoria extendida.\n\nPula [B] para reiniciar.", res);
         svcKernelSetState(7);
     }
     else
@@ -104,7 +104,7 @@ Result      MemoryBlock__Free(void)
     memblock->memblock = NULL;
 
     if (R_FAILED(res))
-        PluginLoader__Error("Couldn't free memblock", res);
+        PluginLoader__Error("No se pudo liberar la memblock", res);
 
     return res;
 }
@@ -127,22 +127,22 @@ Result      MemoryBlock__ToSwapFile(void)
 
     if (R_FAILED(res)) {
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Failed to open swap file.\n\nConsole will now reboot.", res);
+        PluginLoader__Error("ERROR CRITICO: Fallo en abrir el archivo swap.\n\nLa consola se reiniciara.", res);
         svcKernelSetState(7);
     }
-    
+
     if (!ctx->isSwapFunctionset) {
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Swap encrypt function\nis not set.\n\nConsole will now reboot.", res);
+        PluginLoader__Error("ERROR CRITICO: Swap encrypt function\nno ha sido establecida.\n\nLa consola se reiniciara.", res);
         svcKernelSetState(7);
     }
     ctx->swapDecChecksum = encSwapFunc(memblock->memblock, memblock->memblock + MemBlockSize, g_encDecSwapArgs);
-    
+
     res = IFile_Write(&file, &written, memblock->memblock, toWrite, FS_WRITE_FLUSH);
 
     if (R_FAILED(res) || written != toWrite) {
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Couldn't write swap to SD.\n\nConsole will now reboot.", res);
+        PluginLoader__Error("ERROR CRITICO: No se pudo escribir el swap a la SD.\n\nLa consola se reiniciara.", res);
         svcKernelSetState(7);
     }
 
@@ -164,7 +164,7 @@ Result      MemoryBlock__FromSwapFile(void)
 
     if (R_FAILED(res)) {
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Failed to open swap file.\n\nConsole will now reboot.", res);
+        PluginLoader__Error("ERROR CRITICO: Fallo intentando abrir el swap file.\n\nLa consola se reiniciará sola.", res);
         svcKernelSetState(7);
     }
 
@@ -172,20 +172,20 @@ Result      MemoryBlock__FromSwapFile(void)
 
     if (R_FAILED(res) || read != toRead) {
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Couldn't read swap from SD.\n\nConsole will now reboot.", res);
+        PluginLoader__Error("ERROR CRITICO: No se pudo leer swap de la SD.\n\nLa consola se reiniciará sola.", res);
         svcKernelSetState(7);
     }
-    
+
     u32 checksum = decSwapFunc(memblock->memblock, memblock->memblock + MemBlockSize, g_encDecSwapArgs);
-    
+
     PluginLoaderContext *ctx = &PluginLoaderCtx;
     if (checksum != ctx->swapDecChecksum) {
         res = -1;
         PluginLoader__DisableNotificationLED();
-        PluginLoader__Error("CRITICAL: Swap file is corrupted.\n\nConsole will now reboot.", res);
-        svcKernelSetState(7); 
+        PluginLoader__Error("ERROR CRITICO: Archivo Swap Está corrupto.\n\nLa consola se reiniciará sola.", res);
+        svcKernelSetState(7);
     }
-    
+
     svcFlushDataCacheRange(memblock->memblock, MemBlockSize);
     IFile_Close(&file);
     return res;
@@ -203,7 +203,7 @@ Result     MemoryBlock__MountInProcess(void)
     // Executable
     if (R_FAILED((res = svcMapProcessMemoryEx(target, 0x07000000, CUR_PROCESS_HANDLE, (u32)memblock->memblock, header->exeSize))))
     {
-        error->message = "Couldn't map exe memory block";
+        error->message = "No se pudo map exe memory block";
         error->code = res;
         return res;
     }
@@ -211,7 +211,7 @@ Result     MemoryBlock__MountInProcess(void)
     // Heap (to be used by the plugin)
     if (R_FAILED((res = svcMapProcessMemoryEx(target, header->heapVA, CUR_PROCESS_HANDLE, (u32)memblock->memblock + header->exeSize, header->heapSize))))
     {
-        error->message = "Couldn't map heap memory block";
+        error->message = "No se pudo map heap memory block";
         error->code = res;
     }
 
@@ -236,7 +236,7 @@ Result    MemoryBlock__SetSwapSettings(u32* func, bool isDec, u32* params)
     u32* physAddr = PA_FROM_VA_PTR(isDec ? (u32)decSwapFunc : (u32)encSwapFunc); //Bypass mem permissions
 
 	memcpy(g_encDecSwapArgs, params, sizeof(g_encDecSwapArgs));
-    
+
     int i = 0;
     for (; i < 32 && func[i] != 0xE320F000; i++)
         physAddr[i] = func[i];

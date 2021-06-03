@@ -37,7 +37,7 @@ static Result   FindPluginFile(u64 tid)
     Result              res;
     FS_Archive          sdmcArchive = 0;
     FS_DirectoryEntry * entries = g_entries;
-    
+
     memset(entries, 0, sizeof(g_entries));
     sprintf(g_path, g_dirPath, tid);
 
@@ -134,9 +134,9 @@ static Result   CheckPluginCompatibility(_3gx_Header *header, u32 processTitle)
             return 0;
     }
 
-    sprintf(errorBuf, "The plugin - %s -\nis not compatible with this game.\n" \
-                      "Contact \"%s\" for more infos.", header->infos.titleMsg, header->infos.authorMsg);
-    
+    sprintf(errorBuf, "El plugin - %s -\nno es compatible con este juego.\n" \
+                      "Contacta con \"%s\" para mas informacion.", header->infos.titleMsg, header->infos.authorMsg);
+
     PluginLoaderCtx.error.message = errorBuf;
 
     return -1;
@@ -188,16 +188,16 @@ bool     TryToLoadPlugin(Handle process)
     }
 
     if (R_FAILED((res = IFile_GetSize(&plugin, &fileSize))))
-        ctx->error.message = "Couldn't get file size";
+        ctx->error.message = "No se pudo obtener el tamaño del archivo.";
 
     if (!res && R_FAILED(res = Check_3gx_Magic(&plugin)))
     {
-        const char * errors[] = 
+        const char * errors[] =
         {
-            "Couldn't read file.",
-            "Invalid plugin file\nNot a valid 3GX plugin format!",
-            "Outdated plugin file\nCheck for an updated plugin.",
-            "Outdated plugin loader\nCheck for Luma3DS updates."   
+            "No se puedo leer el archivo.",
+            "Archivo de plugin invalido\nNo es un formato 3gx valido!",
+            "Archivo plugin desactualizado\nBusca un plugin actualizado.",
+            "Plugin loader desactualizado\nActualiza Luma3DS."
         };
 
         ctx->error.message = errors[R_MODULE(res) == RM_LDR ? R_DESCRIPTION(res) : 0];
@@ -207,24 +207,24 @@ bool     TryToLoadPlugin(Handle process)
 
     // Read header
     if (!res && R_FAILED((res = Read_3gx_Header(&plugin, header))))
-        ctx->error.message = "Couldn't read file";
-    
+        ctx->error.message = "No se pudo leer el archivo.";
+
     // Read embedded enc/dec functions
     if (!res && R_FAILED((res = Read_3gx_EmbeddedPayloads(&plugin, header))))
-        ctx->error.message = "Invalid encryption payloads.";
-    
+        ctx->error.message = "Encryption payloads invalidos.";
+
     // Save exe checksum
     if (!res)
         ctx->exeDecChecksum = header->infos.exeDecChecksum;
-    
+
     // Check titles compatibility
     if (!res) res = CheckPluginCompatibility(header, (u32)tid);
 
     // Read code
     if (!res && R_FAILED(res = Read_3gx_LoadSegments(&plugin, header, ctx->memblock.memblock + sizeof(PluginHeader)))) {
-        if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_NO_DATA)) ctx->error.message = "This plugin requires a decryption function.";
-        else if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_INVALID_ADDRESS)) ctx->error.message = "This plugin file is corrupted.";
-        else ctx->error.message = "Couldn't read plugin's code";
+        if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_NO_DATA)) ctx->error.message = "Este plugin requiere una funcion de desencriptacion.";
+        else if (res == MAKERESULT(RL_PERMANENT, RS_INVALIDARG, RM_LDR, RD_INVALID_ADDRESS)) ctx->error.message = "Este archivo Plugin esta corrupto.";
+        else ctx->error.message = "No se pudo leer el codigo del Plugin";
     }
 
     if (R_FAILED(res))
@@ -266,7 +266,7 @@ bool     TryToLoadPlugin(Handle process)
 
         if (R_FAILED((res = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, procStart, process, procStart, 0x1000))))
         {
-            ctx->error.message = "Couldn't map process";
+            ctx->error.message = "No se pudo mapear el proceso";
             ctx->error.code = res;
             goto exitFail;
         }

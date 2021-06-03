@@ -65,15 +65,15 @@ typedef struct DspFirm {
 } DspFirm;
 
 Menu miscellaneousMenu = {
-    "Miscellaneous options menu",
+    "Menu de opciones miscelaneas",
     {
-        { "Switch the hb. title to the current app.", METHOD, .method = &MiscellaneousMenu_SwitchBoot3dsxTargetTitle },
-        { "Change the menu combo", METHOD, .method = &MiscellaneousMenu_ChangeMenuCombo },
-        { "Start InputRedirection", METHOD, .method = &MiscellaneousMenu_InputRedirection },
+        { "Cambiar esta aplicacion por Homebrew L.", METHOD, .method = &MiscellaneousMenu_SwitchBoot3dsxTargetTitle },
+        { "Cambiar botones para abrir Rosalina", METHOD, .method = &MiscellaneousMenu_ChangeMenuCombo },
+        { "Iniciar InputRedirection", METHOD, .method = &MiscellaneousMenu_InputRedirection },
         { "Update time and date via NTP", METHOD, .method = &MiscellaneousMenu_UpdateTimeDateNtp },
         { "Nullify user time offset", METHOD, .method = &MiscellaneousMenu_NullifyUserTimeOffset },
         { "Dump DSP firmware", METHOD, .method = &MiscellaneousMenu_DumpDspFirm },
-        { "Save settings", METHOD, .method = &MiscellaneousMenu_SaveSettings },
+        { "Guardar ajustes", METHOD, .method = &MiscellaneousMenu_SaveSettings },
         {},
     }
 };
@@ -92,19 +92,19 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
         if(R_SUCCEEDED(res))
         {
             Luma_SharedConfig->hbldr_3dsx_tid = progInfo.programId;
-            miscellaneousMenu.items[0].title = "Switch the hb. title to hblauncher_loader";
+            miscellaneousMenu.items[0].title = "Cambiar Homebrew L. por hblauncher_loader.";
         }
         else
         {
             res = -1;
-            strcpy(failureReason, "no suitable process found");
+            strcpy(failureReason, "No se encontro un proceso adecuado");
         }
     }
     else
     {
         res = 0;
         Luma_SharedConfig->hbldr_3dsx_tid = HBLDR_DEFAULT_3DSX_TID;
-        miscellaneousMenu.items[0].title = "Switch the hb. title to the current app.";
+        miscellaneousMenu.items[0].title = "Cambiar esta aplicacion por Homebrew L.";
     }
 
     Draw_Lock();
@@ -114,12 +114,12 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Miscellaneous options menu");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Menu de opciones miscelaneas");
 
         if(R_SUCCEEDED(res))
-            Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.");
+            Draw_DrawString(10, 30, COLOR_WHITE, "Operacion existosa.");
         else
-            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (%s).", failureReason);
+            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operacion fallida (%s).", failureReason);
 
         Draw_FlushFramebuffer();
         Draw_Unlock();
@@ -130,14 +130,14 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
 static void MiscellaneousMenu_ConvertComboToString(char *out, u32 combo)
 {
     static const char *keys[] = {
-        "A", "B", "Select", "Start", "Right", "Left", "Up", "Down", "R", "L", "X", "Y",
-        "?", "?",
-        "ZL", "ZR",
-        "?", "?", "?", "?",
-        "Touch",
-        "?", "?", "?",
-        "CStick Right", "CStick Left", "CStick Up", "CStick Down",
-        "CPad Right", "CPad Left", "CPad Up", "CPad Down",
+      "A", "B", "Select", "Start", "Derecha", "Izquierda", "Arriba", "Abajo", "R", "L", "X", "Y",
+      "?", "?",
+      "ZL", "ZR",
+      "?", "?", "?", "?",
+      "Tocar",
+      "?", "?", "?",
+      "CStick Derecha", "CStick Izquierda", "CStick Arriba", "CStick Abajo",
+      "CPad Derecha", "CPad Izquierda", "CPad Arriba", "CPad Abajo",
     };
 
     char *outOrig = out;
