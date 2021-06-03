@@ -125,17 +125,17 @@ bool findPayload(char *path, u32 pressed)
 {
     const char *pattern;
 
-    if(pressed & BUTTON_LEFT) pattern = PATTERN("left");
-    else if(pressed & BUTTON_RIGHT) pattern = PATTERN("right");
-    else if(pressed & BUTTON_UP) pattern = PATTERN("up");
-    else if(pressed & BUTTON_DOWN) pattern = PATTERN("down");
-    else if(pressed & BUTTON_START) pattern = PATTERN("start");
-    else if(pressed & BUTTON_B) pattern = PATTERN("b");
-    else if(pressed & BUTTON_X) pattern = PATTERN("x");
-    else if(pressed & BUTTON_Y) pattern = PATTERN("y");
-    else if(pressed & BUTTON_R1) pattern = PATTERN("r");
-    else if(pressed & BUTTON_A) pattern = PATTERN("a");
-    else pattern = PATTERN("select");
+    if(pressed & BUTTON_LEFT) pattern = PATTERN("Izquierda");
+    else if(pressed & BUTTON_RIGHT) pattern = PATTERN("Derecha");
+    else if(pressed & BUTTON_UP) pattern = PATTERN("Arriba");
+    else if(pressed & BUTTON_DOWN) pattern = PATTERN("Abajo");
+    else if(pressed & BUTTON_START) pattern = PATTERN("Start");
+    else if(pressed & BUTTON_B) pattern = PATTERN("B");
+    else if(pressed & BUTTON_X) pattern = PATTERN("X");
+    else if(pressed & BUTTON_Y) pattern = PATTERN("Y");
+    else if(pressed & BUTTON_R1) pattern = PATTERN("R");
+    else if(pressed & BUTTON_A) pattern = PATTERN("A");
+    else pattern = PATTERN("Select");
 
     DIR dir;
     FILINFO info;
@@ -193,7 +193,7 @@ bool payloadMenu(char *path, bool *hasDisplayedMenu)
         *hasDisplayedMenu = true;
 
         drawString(true, 10, 10, COLOR_TITLE, "Luma3DS chainloader");
-        drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Press A to select, START to quit");
+        drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Pula [A] para seleccionar, [START] para salir.");
 
         for(u32 i = 0, posY = 10 + 3 * SPACING_Y, color = COLOR_RED; i < payloadNum; i++, posY += SPACING_Y)
         {
