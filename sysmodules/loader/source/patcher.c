@@ -275,7 +275,7 @@ static inline bool applyCodeIpsPatch(u64 progId, u8 *code, u32 size)
     u8 buffer[5];
     u64 total;
 
-    if(R_FAILED(IFile_Read(&file, &total, buffer, 5)) || total != 5 || memcmp(buffer, "PATCH", 5) != 0) goto exit;
+    if(R_FAILED(IFile_Read(&file, &total, buffer, 5)) || total != 5 || memcmp(buffer, "Parche", 5) != 0) goto exit;
 
     while(R_SUCCEEDED(IFile_Read(&file, &total, buffer, 3)) && total == 3)
     {
