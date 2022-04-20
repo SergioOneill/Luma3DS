@@ -32,6 +32,7 @@
 #include "hbloader.h"
 #include "3dsx.h"
 #include "utils.h"
+#include "sleep.h"
 #include "MyThread.h"
 #include "menus/miscellaneous.h"
 #include "menus/debugger.h"
@@ -43,6 +44,7 @@
 #include "draw.h"
 
 #include "task_runner.h"
+#include "plugin.h"
 
 bool isN3DS;
 
@@ -63,6 +65,7 @@ void __wrap_exit(int rc)
     // Kernel will take care of it all
     /*
     pmDbgExit();
+    acExit();
     fsExit();
     svcCloseHandle(*fsRegGetSessionHandle());
     srvExit();
@@ -89,8 +92,8 @@ void initSystem(void)
     menuCombo = out == 0 ? DEFAULT_MENU_COMBO : (u32)out;
 
     miscellaneousMenu.items[0].title = Luma_SharedConfig->hbldr_3dsx_tid == HBLDR_DEFAULT_3DSX_TID ?
-        "Switch the hb. title to the current app." :
-        "Switch the hb. title to hblauncher_loader";
+      "Cambiar esta aplicacion por Homebrew L." :
+      "Cambiar hblauncher_loader por Homebrew L.";
 
     for(res = 0xD88007FA; res == (Result)0xD88007FA; svcSleepThread(500 * 1000LL))
     {
@@ -128,7 +131,6 @@ void initSystem(void)
 bool menuShouldExit = false;
 bool preTerminationRequested = false;
 Handle preTerminationEvent;
-extern bool isHidInitialized;
 
 static void handleTermNotification(u32 notificationId)
 {
@@ -137,6 +139,9 @@ static void handleTermNotification(u32 notificationId)
 
 static void handleSleepNotification(u32 notificationId)
 {
+    // Quick dirty fix
+    Sleep__HandleNotification(notificationId);
+
     ptmSysmInit();
     s32 ackValue = ptmSysmGetNotificationAckValue(notificationId);
     switch (notificationId)
@@ -222,6 +227,7 @@ static void handleRestartHbAppNotification(u32 notificationId)
 
 static const ServiceManagerServiceEntry services[] = {
     { "hb:ldr", 2, HBLDR_HandleCommands, true },
+    { "plg:ldr", 1, PluginLoader__HandleCommands, true },
     { NULL },
 };
 
@@ -239,12 +245,17 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x3000,                       handleRestartHbAppNotification          },
+    { 0x1001,                       PluginLoader__HandleKernelEvent         },
     { 0x000, NULL },
 };
 
+// Some changes to commit
 int main(void)
 {
     static u8 ipcBuf[0x100] = {0};  // used by both err:f and hb:ldr
+
+    Sleep__Init();
+    PluginLoader__Init();
 
     // Set up static buffers for IPC
     u32* bufPtrs = getThreadStaticBuffers();

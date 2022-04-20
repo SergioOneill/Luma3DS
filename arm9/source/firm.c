@@ -126,7 +126,7 @@ static inline u32 loadFirmFromStorage(FirmwareType firmType)
 
     if(!firmSize) return 0;
 
-    static const char *extFirmError = "The external FIRM is not valid.";
+    static const char *extFirmError = "El FIRM externo no es valido.";
 
     if(firmSize <= sizeof(Cxi) + 0x200) error(extFirmError);
 
@@ -137,14 +137,14 @@ static inline u32 loadFirmFromStorage(FirmwareType firmType)
         u8 cetk[0xA50];
 
         if(fileRead(cetk, cetkFiles[(u32)firmType], sizeof(cetk)) != sizeof(cetk))
-            error("The cetk is missing or corrupted.");
+            error("El cetk falta o esta corrupto.");
 
         firmSize = decryptNusFirm((Ticket *)(cetk + 0x140), (Cxi *)firm, firmSize);
 
-        if(!firmSize) error("Unable to decrypt the external FIRM.");
+        if(!firmSize) error("No se ha podido desencriptar el FIRM externo.");
     }
 
-    if(!checkFirm(firmSize)) error("The external FIRM is invalid or corrupted.");
+    if(!checkFirm(firmSize)) error("El FIRM externo no es valido o esta corrupto.");
 
     return firmSize;
 }
@@ -181,19 +181,20 @@ u32 loadNintendoFirm(FirmwareType *firmType, FirmwareSource nandType, bool loadF
             loadedFromStorage = true;
             firmSize = result;
         }
-        else if(ctrNandError) error("Unable to mount CTRNAND or load the CTRNAND FIRM.\nPlease use an external one.");
+        else if(ctrNandError) error("No se ha podido montar la CTRNAND o cargar la CTRNAND FIRM.\nPorfavor, utilizar una externa.");
     }
 
     //Check that the FIRM is right for the console from the Arm9 section address
     if((firm->section[3].offset != 0 ? firm->section[3].address : firm->section[2].address) != (ISN3DS ? (u8 *)0x8006000 : (u8 *)0x8006800))
-        error("The %s FIRM is not for this console.", loadedFromStorage ? "external" : "CTRNAND");
+        error("El %s FIRM no es para esta consola.", loadedFromStorage ? "externa" : "CTRNAND");
 
     if(!ISN3DS && *firmType == NATIVE_FIRM && firm->section[0].address == (u8 *)0x1FF80000)
     {
         //We can't boot < 3.x EmuNANDs
-        if(nandType != FIRMWARE_SYSNAND) error("An old unsupported EmuNAND has been detected.\nLuma3DS is unable to boot it.");
+        if(nandType != FIRMWARE_SYSNAND) error("Antigua EmuNAND ha sido detectada.\nLuma3DS no puede iniciarse.");
 
-        if(isSafeMode) error("SAFE_MODE is not supported on 1.x/2.x FIRM.");
+        //If you want to use SAFE_FIRM on 1.0, use Luma from NAND & comment this line:
+        if(isSafeMode) error("SAFE_MODE no es soportado en la version 1.x/2.x FIRM.");
 
         *firmType = NATIVE_FIRM1X2X;
     }
@@ -237,14 +238,15 @@ u32 loadNintendoFirm(FirmwareType *firmType, FirmwareSource nandType, bool loadF
 void loadHomebrewFirm(u32 pressed)
 {
     char path[10 + 255];
-    bool found = !pressed ? payloadMenu(path) : findPayload(path, pressed);
+    bool hasDisplayedMenu = false;
+    bool found = !pressed ? payloadMenu(path, &hasDisplayedMenu) : findPayload(path, pressed);
 
     if(!found) return;
 
     u32 maxPayloadSize = (u32)((u8 *)0x27FFE000 - (u8 *)firm),
         payloadSize = fileRead(firm, path, maxPayloadSize);
 
-    if(payloadSize <= 0x200 || !checkFirm(payloadSize)) error("The payload is invalid or corrupted.");
+    if(payloadSize <= 0x200 || !checkFirm(payloadSize)) error("El payload es invalido o corrupto.");
 
     char absPath[24 + 255];
 
@@ -252,10 +254,12 @@ void loadHomebrewFirm(u32 pressed)
     else sprintf(absPath, "nand:/rw/luma/%s", path);
 
     char *argv[2] = {absPath, (char *)fbs};
+    bool wantsScreenInit = (firm->reserved2[0] & 1) != 0;
 
-    initScreens();
+    if(!hasDisplayedMenu && wantsScreenInit)
+        initScreens(); // Don't init the screens unless we have to, if not already done
 
-    launchFirm((firm->reserved2[0] & 1) ? 2 : 1, argv);
+    launchFirm(wantsScreenInit ? 2 : 1, argv);
 }
 
 static inline void mergeSection0(FirmwareType firmType, u32 firmVersion, bool loadFromStorage)
@@ -303,7 +307,7 @@ static inline void mergeSection0(FirmwareType firmType, u32 firmVersion, bool lo
 
     //3) Read or copy the modules
     u8 *dst = firm->section[0].address;
-    const char *extModuleSizeError = "The external FIRM modules are too large.";
+    const char *extModuleSizeError = "Los modulos externos del FIRM son muy largos.";
     // SAFE_FIRM only for N3DS and only if ENABLESAFEFIRMROSALINA is on
     u32 maxModuleSize = (firmType == NATIVE_FIRM || firmType == SAFE_FIRM) ? 0x80000 : 0x600000;
     for(u32 i = 0, dstModuleSize; i < nbModules; i++, dst += dstModuleSize, maxModuleSize -= dstModuleSize)
@@ -325,7 +329,7 @@ static inline void mergeSection0(FirmwareType firmType, u32 firmVersion, bool lo
                    fileRead(dst, fileName, dstModuleSize) != dstModuleSize ||
                    memcmp(((Cxi *)dst)->ncch.magic, "NCCH", 4) != 0 ||
                    memcmp(moduleList[i].name, ((Cxi *)dst)->exHeader.systemControlInfo.appTitle, sizeof(((Cxi *)dst)->exHeader.systemControlInfo.appTitle)) != 0)
-                    error("An external FIRM module is invalid or corrupted.");
+                    error("Un modulo del FIRM externo es invalido o corrupto.");
 
                 continue;
             }
@@ -342,7 +346,7 @@ static inline void mergeSection0(FirmwareType firmType, u32 firmVersion, bool lo
     if(nbModules == 6)
     {
         if(patchK11ModuleLoading(firm->section[0].size, dst - firm->section[0].address, (u8 *)firm + firm->section[1].offset, firm->section[1].size) != 0)
-            error("Failed to inject custom sysmodule");
+            error("Fallo al inyectar un sysmodul custom.");
     }
 }
 
@@ -428,6 +432,10 @@ u32 patchNativeFirm(u32 firmVersion, FirmwareSource nandType, bool loadFromStora
 u32 patchTwlFirm(u32 firmVersion, bool loadFromStorage, bool doUnitinfoPatch)
 {
     u8 *arm9Section = (u8 *)firm + firm->section[3].offset;
+
+    // Below 3.0, do not actually do anything.
+    if(!ISN3DS && firmVersion < 0xC)
+        return 0;
 
     //On N3DS, decrypt Arm9Bin and patch Arm9 entrypoint to skip kernel9loader
     if(ISN3DS)
@@ -525,6 +533,10 @@ u32 patch1x2xNativeAndSafeFirm(void)
     ret += patchArm9ExceptionHandlersInstall(arm9Section, kernel9Size);
     ret += patchSvcBreak9(arm9Section, kernel9Size, (u32)firm->section[2].address);
 
+    //Apply firmlaunch patches
+    //Doesn't work here if Luma is on SD. If you want to use SAFE_FIRM on 1.0, use Luma from NAND & uncomment this line:
+    //ret += patchFirmlaunches(process9Offset, process9Size, process9MemAddr);
+
     if(ISN3DS && CONFIG(ENABLESAFEFIRMROSALINA))
     {
         u8 *arm11Section1 = (u8 *)firm + firm->section[1].offset;
@@ -539,10 +551,6 @@ u32 patch1x2xNativeAndSafeFirm(void)
         ret += patchKernel11(arm11Section1, firm->section[1].size, baseK11VA, arm11SvcTable, arm11ExceptionsPage);
 
         // Add some other patches to the mix, as we can now launch homebrew on SAFE_FIRM:
-
-        //Apply firmlaunch patches
-        //Or don't, this makes usm not work
-        //ret += patchFirmlaunches(process9Offset, process9Size, process9MemAddr);
 
         ret += patchKernel9Panic(arm9Section, kernel9Size);
         ret += patchP9AccessChecks(process9Offset, process9Size);

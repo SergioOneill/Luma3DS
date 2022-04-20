@@ -117,25 +117,25 @@ void main(int argc, char **argv, u32 magicWord)
     memcpy(__itcm_start__, __itcm_lma__, __itcm_bss_start__ - __itcm_start__);
     memset(__itcm_bss_start__, 0, __itcm_end__ - __itcm_bss_start__);
     I2C_init();
-    if(isInvalidLoader) error("Launched using an unsupported loader.");
+    if(isInvalidLoader) error("Iniciado utilizado un launcher incompatible.");
 
     installArm9Handlers();
 
     if(memcmp(launchedPath, u"sdmc", 8) == 0)
     {
-        if(!mountFs(true, false)) error("Failed to mount SD.");
+        if(!mountFs(true, false)) error("Fallo en el montaje de la SD.");
         isSdMode = true;
     }
     else if(memcmp(launchedPath, u"nand", 8) == 0)
     {
-        if(!mountFs(false, true)) error("Failed to mount CTRNAND.");
+        if(!mountFs(false, true)) error("Fallo en el montaje de la CTRNAND.");
         isSdMode = false;
     }
     else if(bootType == NTR || memcmp(launchedPath, u"firm", 8) == 0)
     {
         if(mountFs(true, false)) isSdMode = true;
         else if(mountFs(false, true)) isSdMode = false;
-        else error("Failed to mount SD and CTRNAND.");
+        else error("Fallo en el montaje de la SD y CTRNAND.");
 
         if(bootType == NTR)
         {
@@ -153,7 +153,7 @@ void main(int argc, char **argv, u32 magicWord)
             mountPoint[i] = (char)launchedPath[i];
         mountPoint[i] = 0;
 
-        error("Launched from an unsupported location: %s.", mountPoint);
+        error("Iniciado desde una ubicacion incompatible: %s.", mountPoint);
     }
 
     detectAndProcessExceptionDumps();
@@ -345,7 +345,7 @@ boot:
         locateEmuNand(&nandType);
         if(nandType == FIRMWARE_SYSNAND) firmSource = FIRMWARE_SYSNAND;
         else if((*(vu16 *)(SDMMC_BASE + REG_SDSTATUS0) & TMIO_STAT0_WRPROTECT) == 0) //Make sure the SD card isn't write protected
-            error("The SD card is locked, EmuNAND can not be used.\nPlease turn the write protection switch off.");
+            error("La tarjeta SD esta bloqueada, EmuNAND no puede ser utilizada.\nPor favor, quita la proteccion de escritura de la tarjeta.");
     }
 
     //Same if we're using EmuNAND as the FIRM source
@@ -381,7 +381,7 @@ boot:
             break;
     }
 
-    if(res != 0) error("Failed to apply %u FIRM patch(es).", res);
+    if(res != 0) error("Fallo al aplicar %u FIRM parche(es).", res);
 
     if(bootType != FIRMLAUNCH) deinitScreens();
     launchFirm(0, NULL);
