@@ -7,7 +7,7 @@
 #include "luma_shared_config.h"
 
 extern u32 config, multiConfig, bootConfig;
-extern bool isN3DS, isSdMode;
+extern bool isN3DS, isSdMode, nextGamePatchDisabled;
 
 static u8 g_ret_buf[sizeof(ExHeader_Info)];
 static u64 g_cached_programHandle;
@@ -188,7 +188,7 @@ static Result PLGLDR_LoadPlugin(Handle *process)
         // Check if the plugin loader is enabled, otherwise skip the loading part
         s64 out;
 
-        svcGetSystemInfo(&out, 0x10000, 0x102);
+        svcGetSystemInfo(&out, 0x10000, 0x180);
         if ((out & 1) == 0)
             return 0;
     }
@@ -448,6 +448,12 @@ void loaderHandleCommands(void *ctx)
             cmdbuf[1] = res;
             cmdbuf[2] = IPC_Desc_StaticBuffer(sizeof(ExHeader_Info), 0); //0x1000002;
             cmdbuf[3] = (u32)&g_ret_buf;
+            break;
+        // Custom
+        case 0x100: // DisableNextGamePatch
+            nextGamePatchDisabled = true;
+            cmdbuf[0] = IPC_MakeHeader(0x100, 1, 0);
+            cmdbuf[1] = MAKERESULT(RL_SUCCESS, RS_SUCCESS, RM_COMMON, RD_SUCCESS);
             break;
         default: // error
             cmdbuf[0] = IPC_MakeHeader(0, 1, 0);

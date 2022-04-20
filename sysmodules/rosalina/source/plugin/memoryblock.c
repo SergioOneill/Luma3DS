@@ -30,7 +30,7 @@ Result      MemoryBlock__IsReady(void)
         u32     appMemAlloc = *appMemAllocPtr;
         u32     temp;
 
-        svcGetSystemInfo(&appRegionSize, 0x10000, 6);
+        svcGetSystemInfo(&appRegionSize, 0x10000, 0x80);
         svcGetSystemInfo(&appRegionUsed, 0, 1);
 
         appRegionFree = appRegionSize - appRegionUsed;
@@ -61,7 +61,6 @@ Result      MemoryBlock__IsReady(void)
     }
 
     if (R_FAILED(res)) {
-        PluginLoader__DisableNotificationLED();
         if (isN3DS)
             PluginLoader__Error("Cannot map plugin memory.", res);
         else
@@ -80,7 +79,7 @@ Result      MemoryBlock__IsReady(void)
             s64     appRegionSize = 0;
             vu32*   appMemAlloc = (vu32 *)PA_FROM_VA_PTR(0x1FF80040);
 
-            svcGetSystemInfo(&appRegionSize, 0x10000, 6);
+            svcGetSystemInfo(&appRegionSize, 0x10000, 0x80);
             if ((u32)appRegionSize == *appMemAlloc)
                 *appMemAlloc -= MemBlockSize; ///< Remove plugin share from available memory
         } */
@@ -126,13 +125,11 @@ Result      MemoryBlock__ToSwapFile(void)
                     fsMakePath(PATH_ASCII, g_swapFileName), FS_OPEN_RWC);
 
     if (R_FAILED(res)) {
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Failed to open swap file.\n\nConsole will now reboot.", res);
         svcKernelSetState(7);
     }
     
     if (!ctx->isSwapFunctionset) {
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Swap encrypt function\nis not set.\n\nConsole will now reboot.", res);
         svcKernelSetState(7);
     }
@@ -141,7 +138,6 @@ Result      MemoryBlock__ToSwapFile(void)
     res = IFile_Write(&file, &written, memblock->memblock, toWrite, FS_WRITE_FLUSH);
 
     if (R_FAILED(res) || written != toWrite) {
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Couldn't write swap to SD.\n\nConsole will now reboot.", res);
         svcKernelSetState(7);
     }
@@ -163,7 +159,6 @@ Result      MemoryBlock__FromSwapFile(void)
                     fsMakePath(PATH_ASCII, g_swapFileName), FS_OPEN_READ);
 
     if (R_FAILED(res)) {
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Failed to open swap file.\n\nConsole will now reboot.", res);
         svcKernelSetState(7);
     }
@@ -171,7 +166,6 @@ Result      MemoryBlock__FromSwapFile(void)
     res = IFile_Read(&file, &read, memblock->memblock, toRead);
 
     if (R_FAILED(res) || read != toRead) {
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Couldn't read swap from SD.\n\nConsole will now reboot.", res);
         svcKernelSetState(7);
     }
@@ -181,7 +175,6 @@ Result      MemoryBlock__FromSwapFile(void)
     PluginLoaderContext *ctx = &PluginLoaderCtx;
     if (checksum != ctx->swapDecChecksum) {
         res = -1;
-        PluginLoader__DisableNotificationLED();
         PluginLoader__Error("CRITICAL: Swap file is corrupted.\n\nConsole will now reboot.", res);
         svcKernelSetState(7); 
     }

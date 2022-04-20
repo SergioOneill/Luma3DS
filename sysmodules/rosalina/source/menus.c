@@ -90,6 +90,13 @@ void RosalinaMenu_ShowDebugInfo(void)
     u32 kernelVer = osGetKernelVersion();
     FS_SdMmcSpeedInfo speedInfo;
 
+    Handle hm = 0;
+    OpenProcessByName("menu", &hm);
+    s64 out = 0;
+    svcGetHandleInfo(&out, hm, 0);
+    svcCloseHandle(hm);
+    u64 timeToBootHm = 1000u * out / SYSCLOCK_ARM11;
+
     do
     {
         Draw_Lock();
@@ -125,6 +132,13 @@ void RosalinaMenu_ShowDebugInfo(void)
                 (int)speedInfo.highSpeedModeEnabled, SYSCLOCK_SDMMC / (1000 * clkDiv)
             );
         }
+        if (timeToBootHm != 0)
+        {
+            posY = Draw_DrawFormattedString(
+                10, posY, COLOR_WHITE, "Time to boot to Home Menu: %llums\n",
+                timeToBootHm
+            );
+        }
         Draw_FlushFramebuffer();
         Draw_Unlock();
     }
@@ -143,7 +157,7 @@ void RosalinaMenu_ShowCredits(void)
         Draw_Lock();
         Draw_DrawString(10, 10, COLOR_TITLE, "Rosalina -- Luma3DS credits");
 
-        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2020 AuroraWright, TuxSH") + SPACING_Y;
+        u32 posY = Draw_DrawString(10, 30, COLOR_WHITE, "Luma3DS (c) 2016-2022 AuroraWright, TuxSH") + SPACING_Y;
 
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "3DSX loading code by fincs");
         posY = Draw_DrawString(10, posY + SPACING_Y, COLOR_WHITE, "Networking code & basic GDB functionality by Stary");
@@ -408,6 +422,8 @@ void RosalinaMenu_TakeScreenshot(void)
         FSUSER_CloseArchive(archive);
     }
 
+    // Conversion code adapted from https://stackoverflow.com/questions/21593692/convert-unix-timestamp-to-date-without-system-libs
+    // (original author @gnif under CC-BY-SA 4.0)
     u32 seconds, minutes, hours, days, year, month;
     u64 milliseconds = osGetTime();
     seconds = milliseconds/1000;
