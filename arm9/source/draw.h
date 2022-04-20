@@ -41,16 +41,10 @@
 #define COLOR_RED    0x0000FF
 #define COLOR_BLACK  0x000000
 #define COLOR_YELLOW 0x00FFFF
-#define COLOR_CREMA 0xF4CAA8
-#define COLOR_NARANJA 0xD3840E
-#define COLOR_CLARO 0xEFDEB3
-#define COLOR_PURPLE 0xE70BEB
 
 #define DRAW_MAX_FORMATTED_STRING_SIZE  512
 
 bool loadSplash(void);
 void drawCharacter(bool isTopScreen, u32 posX, u32 posY, u32 color, char character);
 u32 drawString(bool isTopScreen, u32 posX, u32 posY, u32 color, const char *string);
-
-__attribute__((format(printf,5,6)))
 u32 drawFormattedString(bool isTopScreen, u32 posX, u32 posY, u32 color, const char *fmt, ...);

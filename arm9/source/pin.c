@@ -54,10 +54,10 @@ void newPin(bool allowSkipping, u32 pinMode)
 
     u8 length = 4 + 2 * (pinMode - 1);
 
-    drawString(true, 10, 10, COLOR_TITLE, "Introducir un nuevo PIN utilizando ABXY y el DPad.");
-    drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, allowSkipping ? "Pula [START] para salir, [SELECT] para resetear." : "Pulsa [SELECT] para resetear.");
+    drawString(true, 10, 10, COLOR_TITLE, "Enter a new PIN using ABXY and the DPad");
+    drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, allowSkipping ? "Press START to skip, SELECT to reset" : "Press SELECT to reset");
 
-    drawFormattedString(true, 10, 10 + 3 * SPACING_Y, COLOR_WHITE, "PIN (%u digitos): ", length);
+    drawFormattedString(true, 10, 10 + 3 * SPACING_Y, COLOR_WHITE, "PIN (%u digits): ", length);
 
     //Pad to AES block length with zeroes
     __attribute__((aligned(4))) u8 enteredPassword[AES_BLOCK_SIZE] = {0};
@@ -122,7 +122,7 @@ void newPin(bool allowSkipping, u32 pinMode)
     memcpy(pin.hash, tmp, sizeof(tmp));
 
     if(!fileWrite(&pin, PIN_FILE, sizeof(PinData)))
-        error("Error al escrbir el archivo del PIN.");
+        error("Error writing the PIN file");
 }
 
 bool verifyPin(u32 pinMode)
@@ -148,10 +148,10 @@ bool verifyPin(u32 pinMode)
 
     swapFramebuffers(true);
 
-    drawString(true, 10, 10, COLOR_TITLE, "Introduce el PIN utilizando ABXY y el DPad para proceder.");
-    drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Pulsa [START] para apagar, [SELECT] para limpair.");
+    drawString(true, 10, 10, COLOR_TITLE, "Enter the PIN using ABXY and the DPad to proceed");
+    drawString(true, 10, 10 + SPACING_Y, COLOR_TITLE, "Press START to shutdown, SELECT to clear");
 
-    drawFormattedString(true, 10, 10 + 3 * SPACING_Y, COLOR_WHITE, "PIN (%u digitos): ", lengthBlock[0]);
+    drawFormattedString(true, 10, 10 + 3 * SPACING_Y, COLOR_WHITE, "PIN (%u digits): ", lengthBlock[0]);
 
     bool isBottomSplashValid = getFileSize("splashpin.bin") == SCREEN_BOTTOM_FBSIZE;
     if(isBottomSplashValid)
@@ -225,7 +225,7 @@ bool verifyPin(u32 pinMode)
         {
             reset = true;
 
-            drawString(true, 10, 10 + 5 * SPACING_Y, COLOR_RED, "PIN incorrecto, prueba otra vez.");
+            drawString(true, 10, 10 + 5 * SPACING_Y, COLOR_RED, "Wrong PIN, try again");
         }
     }
 

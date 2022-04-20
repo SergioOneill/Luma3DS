@@ -346,7 +346,7 @@ static u32 Cheat_ApplyCheat(const Handle processHandle, CheatDescription* const 
             {
                 u32 value = 0;
                 if (!Cheat_Read32(processHandle, arg0 & 0x0FFFFFFF, &value)) return 0;
-
+                
                 cheat_state.ifStack <<= 1;
                 if (value > arg1)
                 {
@@ -1541,13 +1541,13 @@ static Result Cheat_MapMemoryAndApplyCheat(u32 pid, CheatDescription* const chea
         }
         else
         {
-            sprintf(failureReason, "Proceso de depuracion fallido");
+            sprintf(failureReason, "Debug process failed");
             svcCloseHandle(processHandle);
         }
     }
     else
     {
-        sprintf(failureReason, "Proceso de apertura fallido");
+        sprintf(failureReason, "Open process failed");
     }
     return res;
 }
@@ -1907,7 +1907,7 @@ void Cheat_ApplyCheats(void)
         if (cheats[i]->active)
         {
             Cheat_MapMemoryAndApplyCheat(pid, cheats[i]);
-        }
+        } 
     }
 }
 
@@ -1934,14 +1934,14 @@ void RosalinaMenu_Cheats(void)
         do
         {
             Draw_Lock();
-            Draw_DrawString(10, 10, COLOR_TITLE, "Trucos");
+            Draw_DrawString(10, 10, COLOR_TITLE, "Cheats");
             if (titleId == 0)
             {
-                Draw_DrawString(10, 30, COLOR_WHITE, "No se ha detectado ningun juego/titulo.");
+                Draw_DrawString(10, 30, COLOR_WHITE, "No suitable title found");
             }
             else
             {
-                Draw_DrawFormattedString(10, 30, COLOR_WHITE, "No hay trucos disponibles para el titulo %016llX", titleId);
+                Draw_DrawFormattedString(10, 30, COLOR_WHITE, "No cheats found for title %016llX", titleId);
             }
 
             Draw_FlushFramebuffer();
@@ -1962,7 +1962,7 @@ void RosalinaMenu_Cheats(void)
             }
             if (R_SUCCEEDED(r))
             {
-                Draw_DrawFormattedString(10, 10, COLOR_TITLE, "Lista de trucos");
+                Draw_DrawFormattedString(10, 10, COLOR_TITLE, "Cheat list");
 
                 for (s32 i = 0; i < CHEATS_PER_MENU_PAGE && page * CHEATS_PER_MENU_PAGE + i < cheatCount; i++)
                 {

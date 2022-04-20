@@ -36,44 +36,15 @@
 #include "minisoc.h"
 #include "ifile.h"
 #include "pmdbgext.h"
-#include "plugin.h"
-#include "process_patches.h"
-
-typedef struct DspFirmSegmentHeader {
-    u32 offset;
-    u32 loadAddrHalfwords;
-    u32 size;
-    u8 _0x0C[3];
-    u8 memType;
-    u8 hash[0x20];
-} DspFirmSegmentHeader;
-
-typedef struct DspFirm {
-    u8 signature[0x100];
-    char magic[4];
-    u32 totalSize; // no more than 0x10000
-    u16 layoutBitfield;
-    u8 _0x10A[3];
-    u8 surroundSegmentMemType;
-    u8 numSegments; // no more than 10
-    u8 flags;
-    u32 surroundSegmentLoadAddrHalfwords;
-    u32 surroundSegmentSize;
-    u8 _0x118[8];
-    DspFirmSegmentHeader segmentHdrs[10];
-    u8 data[];
-} DspFirm;
 
 Menu miscellaneousMenu = {
-    "Menu de opciones miscelaneas",
+    "Miscellaneous options menu",
     {
-        { "Cambiar esta aplicacion por Homebrew L.", METHOD, .method = &MiscellaneousMenu_SwitchBoot3dsxTargetTitle },
-        { "Cambiar botones para abrir Rosalina", METHOD, .method = &MiscellaneousMenu_ChangeMenuCombo },
-        { "Iniciar InputRedirection", METHOD, .method = &MiscellaneousMenu_InputRedirection },
-        { "Update time and date via NTP", METHOD, .method = &MiscellaneousMenu_UpdateTimeDateNtp },
-        { "Nullify user time offset", METHOD, .method = &MiscellaneousMenu_NullifyUserTimeOffset },
-        { "Dump DSP firmware", METHOD, .method = &MiscellaneousMenu_DumpDspFirm },
-        { "Guardar ajustes", METHOD, .method = &MiscellaneousMenu_SaveSettings },
+        { "Switch the hb. title to the current app.", METHOD, .method = &MiscellaneousMenu_SwitchBoot3dsxTargetTitle },
+        { "Change the menu combo", METHOD, .method = &MiscellaneousMenu_ChangeMenuCombo },
+        { "Start InputRedirection", METHOD, .method = &MiscellaneousMenu_InputRedirection },
+        { "Sync time and date via NTP", METHOD, .method = &MiscellaneousMenu_SyncTimeDate },
+        { "Save settings", METHOD, .method = &MiscellaneousMenu_SaveSettings },
         {},
     }
 };
@@ -92,19 +63,19 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
         if(R_SUCCEEDED(res))
         {
             Luma_SharedConfig->hbldr_3dsx_tid = progInfo.programId;
-            miscellaneousMenu.items[0].title = "Cambiar Homebrew L. por hblauncher_loader.";
+            miscellaneousMenu.items[0].title = "Switch the hb. title to hblauncher_loader";
         }
         else
         {
             res = -1;
-            strcpy(failureReason, "No se encontro un proceso adecuado");
+            strcpy(failureReason, "no suitable process found");
         }
     }
     else
     {
         res = 0;
         Luma_SharedConfig->hbldr_3dsx_tid = HBLDR_DEFAULT_3DSX_TID;
-        miscellaneousMenu.items[0].title = "Cambiar esta aplicacion por Homebrew L.";
+        miscellaneousMenu.items[0].title = "Switch the hb. title to the current app.";
     }
 
     Draw_Lock();
@@ -114,12 +85,12 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Menu de opciones miscelaneas");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Miscellaneous options menu");
 
         if(R_SUCCEEDED(res))
-            Draw_DrawString(10, 30, COLOR_WHITE, "Operacion existosa.");
+            Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.");
         else
-            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operacion fallida (%s).", failureReason);
+            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (%s).", failureReason);
 
         Draw_FlushFramebuffer();
         Draw_Unlock();
@@ -130,14 +101,14 @@ void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
 static void MiscellaneousMenu_ConvertComboToString(char *out, u32 combo)
 {
     static const char *keys[] = {
-      "A", "B", "Select", "Start", "Derecha", "Izquierda", "Arriba", "Abajo", "R", "L", "X", "Y",
-      "?", "?",
-      "ZL", "ZR",
-      "?", "?", "?", "?",
-      "Tocar",
-      "?", "?", "?",
-      "CStick Derecha", "CStick Izquierda", "CStick Arriba", "CStick Abajo",
-      "CPad Derecha", "CPad Izquierda", "CPad Arriba", "CPad Abajo",
+        "A", "B", "Select", "Start", "Right", "Left", "Up", "Down", "R", "L", "X", "Y",
+        "?", "?",
+        "ZL", "ZR",
+        "?", "?", "?", "?",
+        "Touch",
+        "?", "?", "?",
+        "CStick Right", "CStick Left", "CStick Up", "CStick Down",
+        "CPad Right", "CPad Left", "CPad Up", "CPad Down",
     };
 
     char *outOrig = out;
@@ -193,7 +164,7 @@ void MiscellaneousMenu_ChangeMenuCombo(void)
     while(!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
-Result  SaveSettings(void)
+void MiscellaneousMenu_SaveSettings(void)
 {
     Result res;
 
@@ -208,14 +179,12 @@ Result  SaveSettings(void)
         u32 config, multiConfig, bootConfig;
         u64 hbldr3dsxTitleId;
         u32 rosalinaMenuCombo;
-        u32 rosalinaFlags;
     } configData;
 
     u32 formatVersion;
     u32 config, multiConfig, bootConfig;
     s64 out;
     bool isSdMode;
-
     if(R_FAILED(svcGetSystemInfo(&out, 0x10000, 2))) svcBreak(USERBREAK_ASSERT);
     formatVersion = (u32)out;
     if(R_FAILED(svcGetSystemInfo(&out, 0x10000, 3))) svcBreak(USERBREAK_ASSERT);
@@ -235,24 +204,12 @@ Result  SaveSettings(void)
     configData.bootConfig = bootConfig;
     configData.hbldr3dsxTitleId = Luma_SharedConfig->hbldr_3dsx_tid;
     configData.rosalinaMenuCombo = menuCombo;
-    configData.rosalinaFlags = PluginLoader__IsEnabled();
 
     FS_ArchiveID archiveId = isSdMode ? ARCHIVE_SDMC : ARCHIVE_NAND_RW;
     res = IFile_Open(&file, archiveId, fsMakePath(PATH_EMPTY, ""), fsMakePath(PATH_ASCII, "/luma/config.bin"), FS_OPEN_CREATE | FS_OPEN_WRITE);
 
     if(R_SUCCEEDED(res))
-        res = IFile_SetSize(&file, sizeof(configData));
-    if(R_SUCCEEDED(res))
         res = IFile_Write(&file, &total, &configData, sizeof(configData), 0);
-    IFile_Close(&file);
-
-    IFile_Close(&file);
-    return res;
-}
-
-void MiscellaneousMenu_SaveSettings(void)
-{
-    Result res = SaveSettings();
 
     Draw_Lock();
     Draw_ClearFramebuffer();
@@ -387,7 +344,7 @@ void MiscellaneousMenu_InputRedirection(void)
     while(!(waitInput() & KEY_B) && !menuShouldExit);
 }
 
-void MiscellaneousMenu_UpdateTimeDateNtp(void)
+void MiscellaneousMenu_SyncTimeDate(void)
 {
     u32 posY;
     u32 input = 0;
@@ -458,7 +415,7 @@ void MiscellaneousMenu_UpdateTimeDateNtp(void)
         else if (R_FAILED(res))
             Draw_DrawFormattedString(10, posY + 2 * SPACING_Y, COLOR_WHITE, "Operation failed (%08lx).", (u32)res) + SPACING_Y;
         else
-            Draw_DrawFormattedString(10, posY + 2 * SPACING_Y, COLOR_WHITE, "Time/date updated successfully.") + SPACING_Y;
+            Draw_DrawFormattedString(10, posY + 2 * SPACING_Y, COLOR_WHITE, "Timedate & RTC updated successfully.\nYou may need to reboot to see the changes.") + SPACING_Y;
 
         input = waitInput();
 
@@ -467,97 +424,4 @@ void MiscellaneousMenu_UpdateTimeDateNtp(void)
     }
     while(!(input & KEY_B) && !menuShouldExit);
 
-}
-
-void MiscellaneousMenu_NullifyUserTimeOffset(void)
-{
-    Result res = ntpNullifyUserTimeOffset();
-
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-    Draw_Unlock();
-
-    do
-    {
-        Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Miscellaneous options menu");
-        if(R_SUCCEEDED(res))
-            Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.\n\nPlease reboot to finalize the changes.");
-        else
-            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%08lx).", res);
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
-    }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
-}
-
-static Result MiscellaneousMenu_DumpDspFirmCallback(Handle procHandle, u32 textSz, u32 roSz, u32 rwSz)
-{
-    (void)procHandle;
-    Result res = 0;
-
-    // NOTE: we suppose .text, .rodata, .data+.bss are contiguous & in that order
-    u32 rwStart = 0x00100000 + textSz + roSz;
-    u32 rwEnd = rwStart + rwSz;
-
-    // Locate the DSP firm (it's in .data, not .rodata, suprisingly)
-    u32 magic;
-    memcpy(&magic, "DSP1", 4);
-    const u32 *off = (u32 *)rwStart;
-
-    for (; off < (u32 *)rwEnd && *off != magic; off++);
-
-    if (off >= (u32 *)rwEnd || off < (u32 *)(rwStart + 0x100))
-        return -2;
-
-    // Do some sanity checks
-    const DspFirm *firm = (const DspFirm *)((u32)off - 0x100);
-    if (firm->totalSize > 0x10000 || firm->numSegments > 10)
-        return -3;
-    if ((u32)firm + firm->totalSize >= rwEnd)
-        return -3;
-
-    // Dump to SD card (no point in dumping to CTRNAND as 3dsx stuff doesn't work there)
-    IFile file;
-    res = IFile_Open(
-        &file, ARCHIVE_SDMC, fsMakePath(PATH_EMPTY, ""),
-        fsMakePath(PATH_ASCII, "/3ds/dspfirm.cdc"), FS_OPEN_CREATE | FS_OPEN_WRITE
-    );
-
-    u64 total;
-    if(R_SUCCEEDED(res))
-        res = IFile_Write(&file, &total, firm, firm->totalSize, 0);
-    if(R_SUCCEEDED(res))
-        res = IFile_SetSize(&file, firm->totalSize); // truncate accordingly
-
-    IFile_Close(&file);
-
-    return res;
-}
-void MiscellaneousMenu_DumpDspFirm(void)
-{
-    Result res = OperateOnProcessByName("menu", MiscellaneousMenu_DumpDspFirmCallback);
-
-    Draw_Lock();
-    Draw_ClearFramebuffer();
-    Draw_FlushFramebuffer();
-    Draw_Unlock();
-
-    do
-    {
-        Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Miscellaneous options menu");
-        if(R_SUCCEEDED(res))
-            Draw_DrawString(10, 30, COLOR_WHITE, "DSP firm. successfully written to /3ds/dspfirm.cdc\non the SD card.");
-        else
-            Draw_DrawFormattedString(
-                10, 30, COLOR_WHITE,
-                "Operation failed (0x%08lx).\n\nMake sure that Home Menu is running and that your\nSD card is inserted.",
-                res
-            );
-        Draw_FlushFramebuffer();
-        Draw_Unlock();
-    }
-    while(!(waitInput() & KEY_B) && !menuShouldExit);
 }

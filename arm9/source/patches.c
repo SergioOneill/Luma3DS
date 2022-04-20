@@ -48,7 +48,7 @@ u8 *getProcess9Info(u8 *pos, u32 size, u32 *process9Size, u32 *process9MemAddr)
 {
     u8 *temp = memsearch(pos, "NCCH", size, 4);
 
-    if(temp == NULL) error("Fallo al obtener datos del Process9.");
+    if(temp == NULL) error("Failed to get Process9 data.");
 
     Cxi *off = (Cxi *)(temp - 0x100);
 
@@ -63,7 +63,7 @@ u32 *getKernel11Info(u8 *pos, u32 size, u32 *baseK11VA, u8 **freeK11Space, u32 *
     static const u8 pattern[] = {0x00, 0xB0, 0x9C, 0xE5};
     *arm11ExceptionsPage = (u32 *)memsearch(pos, pattern, size, sizeof(pattern));
 
-    if(*arm11ExceptionsPage == NULL) error("Fallo al obtener datos de Kernel11.");
+    if(*arm11ExceptionsPage == NULL) error("Failed to get Kernel11 data.");
 
     u32 *arm11SvcTable;
 
@@ -131,7 +131,6 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
             u32 config, multiConfig, bootConfig;
             u64 hbldr3dsxTitleId;
             u32 rosalinaMenuCombo;
-            u32 rosalinaFlags;
         } info;
     };
 
@@ -204,7 +203,6 @@ u32 installK11Extension(u8 *pos, u32 size, bool needToInitSd, u32 baseK11VA, u32
     info->bootConfig = configData.bootConfig;
     info->hbldr3dsxTitleId = configData.hbldr3dsxTitleId;
     info->rosalinaMenuCombo = configData.rosalinaMenuCombo;
-    info->rosalinaFlags = configData.rosalinaFlags;
     info->versionMajor = VERSION_MAJOR;
     info->versionMinor = VERSION_MINOR;
     info->versionBuild = VERSION_BUILD;
@@ -577,7 +575,7 @@ u32 patchP9AMTicketWrapperZeroKeyIV(u8 *pos, u32 size, u32 firmVersion)
     //Beyond limit
     if(opjumpdistance < -0x1fffff || opjumpdistance > 0x1fffff) return 1;
 
-    //r0 and r1 for old call are already correct for this one
+    //r0 and r1 for old call are already correct for this one 
     //BLX __rt_memclr
     u32 op = (0xE800F000U | (((u32)opjumpdistance & 0x7FF) << 16) | (((u32)opjumpdistance >> 11) & 0x3FF) | (((u32)opjumpdistance >> 21) & 0x400)) & ~(1<<16);
 

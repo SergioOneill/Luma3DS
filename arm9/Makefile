@@ -55,10 +55,9 @@ INCLUDES	:=	include
 ARCH	:=	-marm -march=armv5te -mtune=arm946e-s
 DEFINES :=	-DARM9 -D_3DS
 
-FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -O2 -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections \
-			-Wno-main $(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+			-Wno-main $(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 
@@ -159,7 +158,7 @@ $(OUTPUT).elf	:	$(OFILES)
 $(OFILES_SRC)	: $(HFILES_BIN)
 
 memory.o strings.o:	CFLAGS +=	-O3
-config.o:			CFLAGS +=	-DCONFIG_TITLE="\"$(APP_TITLE)-ESP $(REVISION)- 3GX Plugin Loader\""
+config.o:			CFLAGS +=	-DCONFIG_TITLE="\"$(APP_TITLE) $(REVISION) configuration\""
 patches.o:			CFLAGS +=	-DVERSION_MAJOR="$(VERSION_MAJOR)" -DVERSION_MINOR="$(VERSION_MINOR)"\
 								-DVERSION_BUILD="$(VERSION_BUILD)" -DISRELEASE="$(IS_RELEASE)" -DCOMMIT_HASH="0x$(COMMIT)"
 #---------------------------------------------------------------------------------

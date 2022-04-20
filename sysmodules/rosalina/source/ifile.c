@@ -57,16 +57,7 @@ Result IFile_GetSize(IFile *file, u64 *size)
   Result res;
 
   res = FSFILE_GetSize(file->handle, size);
-  if (R_SUCCEEDED(res)) file->size = *size;
-  return res;
-}
-
-Result IFile_SetSize(IFile *file, u64 size)
-{
-  Result res;
-
-  res = FSFILE_SetSize(file->handle, size);
-  if (R_SUCCEEDED(res)) file->size = size;
+  file->size = *size;
   return res;
 }
 
@@ -109,7 +100,7 @@ Result IFile_Read(IFile *file, u64 *total, void *buffer, u32 len)
   return res;
 }
 
-Result IFile_Write(IFile *file, u64 *total, const void *buffer, u32 len, u32 flags)
+Result IFile_Write(IFile *file, u64 *total, void *buffer, u32 len, u32 flags)
 {
   u32 written;
   u32 left;

@@ -18,7 +18,7 @@ include $(DEVKITARM)/3ds_rules
 #---------------------------------------------------------------------------------
 TARGET		:=	$(notdir $(CURDIR))
 BUILD		:=	build
-SOURCES		:=	source source/gdb source/menus source/plugin source/redshift
+SOURCES		:=	source source/gdb source/menus source/redshift
 DATA		:=	source/gdb/xml
 INCLUDES	:=	include include/gdb include/menus include/redshift
 
@@ -28,10 +28,9 @@ INCLUDES	:=	include include/gdb include/menus include/redshift
 ARCH	:=	-march=armv6k -mtune=mpcore -mfloat-abi=hard -mtp=soft
 DEFINES :=	-DARM11 -D_3DS
 
-FALSEPOSITIVES := -Wno-array-bounds -Wno-stringop-overflow -Wno-stringop-overread
 CFLAGS	:=	-g -std=gnu11 -Wall -Wextra -Werror -Wno-unused-value -Os -mword-relocations \
 			-fomit-frame-pointer -ffunction-sections -fdata-sections -fno-math-errno \
-			$(FALSEPOSITIVES) $(ARCH) $(DEFINES)
+			$(ARCH) $(DEFINES)
 
 CFLAGS	+=	$(INCLUDE)
 

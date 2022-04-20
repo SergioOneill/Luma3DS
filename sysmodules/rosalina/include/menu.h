@@ -64,15 +64,12 @@ typedef struct Menu {
     MenuItem items[16];
 } Menu;
 
-extern u32 menuCombo;
-extern bool isHidInitialized;
-extern u32 mcuFwVersion;
-
-// From main.c
 extern bool isN3DS;
 extern bool menuShouldExit;
 extern bool preTerminationRequested;
 extern Handle preTerminationEvent;
+
+extern u32 menuCombo;
 
 u32 waitInputWithTimeout(s32 msec);
 u32 waitInput(void);
@@ -84,10 +81,7 @@ bool menuCheckN3ds(void);
 u32 menuCountItems(const Menu *menu);
 
 MyThread *menuCreateThread(void);
-void    menuEnter(void);
-void    menuLeave(void);
-void    menuThreadMain(void);
-void    menuShow(Menu *root);
-void    DispMessage(const char *title, const char *message);
-u32     DispErrMessage(const char *title, const char *message, const Result error);
-void    DisplayPluginMenu(u32   *cmdbuf);
+void menuEnter(void);
+void menuLeave(void);
+void menuThreadMain(void);
+void menuShow(Menu *root);
