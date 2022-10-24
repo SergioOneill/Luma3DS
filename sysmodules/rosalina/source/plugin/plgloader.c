@@ -63,8 +63,8 @@ void        PluginLoader__UpdateMenu(void)
 {
     static const char *status[2] =
     {
-        "Plugin Loader: [Disabled]",
-        "Plugin Loader: [Enabled]"
+        "Plugin Loader: [Desactivado]",
+        "Plugin Loader: [Habilitado]"
     };
 
     rosalinaMenu.items[3].title = status[PluginLoaderCtx.isEnabled];
