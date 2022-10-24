@@ -24,6 +24,7 @@
 *         reasonable ways as different from the original version.
 */
 
+
 #include <3ds.h>
 #include "menus/process_list.h"
 #include "process_patches.h"
@@ -79,12 +80,12 @@ static inline int ProcessListMenu_FormatInfoLine(char *out, const ProcessInfo *i
         {
             u8 *addr = (u8 *)&ctx->super.addr_in.sin_addr;
             checkbox = "(A) ";
-            sprintf(commentBuf, "Remoto: %hhu.%hhu.%hhu.%hhu", addr[0], addr[1], addr[2], addr[3]);
+            sprintf(commentBuf, "Remote: %hhu.%hhu.%hhu.%hhu", addr[0], addr[1], addr[2], addr[3]);
         }
         else if ((ctx->flags & GDB_FLAG_SELECTED) && (ctx->localPort >= GDB_PORT_BASE && ctx->localPort < GDB_PORT_BASE + MAX_DEBUG))
         {
             checkbox = "(W) ";
-            sprintf(commentBuf, "Puerto: %hu", ctx->localPort);
+            sprintf(commentBuf, "Port: %hu", ctx->localPort);
         }
     }
 
@@ -105,8 +106,8 @@ static void ProcessListMenu_DumpMemory(const char *name, void *start, u32 size)
 #define TRY(expr) if(R_FAILED(res = (expr))) goto end;
 
     Draw_Lock();
-    Draw_DrawString(10, 10, COLOR_TITLE, "Dumpeo de memoria");
-    const char * wait_message = "Espere, esto puede tomar un tiempo...";
+    Draw_DrawString(10, 10, COLOR_TITLE, "Memory dump");
+    const char * wait_message = "Please wait, this may take a while...";
     Draw_DrawString(10, 30, COLOR_WHITE, wait_message);
     Draw_FlushFramebuffer();
     Draw_Unlock();
@@ -193,17 +194,17 @@ end:
     do
     {
         Draw_Lock();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Dumpeo de memoria");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Memory dump");
         Draw_DrawFormattedString(10, 30, COLOR_WHITE, "%*s", strlen(wait_message), " ");
         if(R_FAILED(res))
         {
-            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operacion fallida (0x%.8lx).", res);
+            Draw_DrawFormattedString(10, 30, COLOR_WHITE, "Operation failed (0x%.8lx).", res);
         }
         else
         {
-            Draw_DrawString(10, 30, COLOR_WHITE, "Operacion exitosa.");
+            Draw_DrawString(10, 30, COLOR_WHITE, "Operation succeeded.");
         }
-        Draw_DrawString(10, 30+SPACING_Y, COLOR_WHITE, "Pulsa B para volver.");
+        Draw_DrawString(10, 30+SPACING_Y, COLOR_WHITE, "Press B to go back.");
 
         Draw_FlushFramebuffer();
         Draw_Unlock();
@@ -243,8 +244,8 @@ static void ProcessListMenu_MemoryViewer(const ProcessInfo *info)
         svcQueryProcessMemory(&mem, &out, processHandle, heapStartAddress);
         heapTotalSize = mem.size;
 
-        Result codeRes = svcMapProcessMemoryEx(processHandle, codeDestAddress, codeStartAddress, codeTotalSize);
-        Result heapRes = svcMapProcessMemoryEx(processHandle, heapDestAddress, heapStartAddress, heapTotalSize);
+        Result codeRes = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, codeDestAddress, processHandle, codeStartAddress, codeTotalSize);
+        Result heapRes = svcMapProcessMemoryEx(CUR_PROCESS_HANDLE, heapDestAddress, processHandle, heapStartAddress, heapTotalSize);
 
         bool codeAvailable = R_SUCCEEDED(codeRes);
         bool heapAvailable = R_SUCCEEDED(heapRes);
@@ -401,45 +402,45 @@ static void ProcessListMenu_MemoryViewer(const ProcessInfo *info)
             void drawMenu(void)
             {
                 Draw_Lock();
-                Draw_DrawString(10, 10, COLOR_TITLE, "Visor de memoria");
+                Draw_DrawString(10, 10, COLOR_TITLE, "Memory viewer");
 
                 // Instructions
                 const u32 instructionsY = 30;
                 u32 viewerY = instructionsY + SPACING_Y + 6;
-                Draw_DrawString(10, instructionsY, COLOR_WHITE, "D-PAD: Mover, X: Saltar a, Y: Buscar, A: Editar.");
+                Draw_DrawString(10, instructionsY, COLOR_WHITE, "D-PAD to move, X to jump, Y to search, A to edit.");
 
                 switch(menuMode)
                 {
                     case MENU_MODE_NORMAL:
-                        Draw_DrawString(10 + SPACING_X * 9, instructionsY, COLOR_GREEN, "mover");
+                        Draw_DrawString(10 + SPACING_X * 9, instructionsY, COLOR_GREEN, "move");
                         break;
                     case MENU_MODE_GOTO:
-                        Draw_DrawString(10 + SPACING_X * 20, instructionsY, COLOR_GREEN, "saltar");
+                        Draw_DrawString(10 + SPACING_X * 20, instructionsY, COLOR_GREEN, "jump");
                         break;
                     case MENU_MODE_SEARCH:
-                        Draw_DrawString(10 + SPACING_X * 31, instructionsY, COLOR_GREEN, "buscar");
+                        Draw_DrawString(10 + SPACING_X * 31, instructionsY, COLOR_GREEN, "search");
                         break;
                     default: break;
                 }
 
                 if(editing)
-                    Draw_DrawString(10 + SPACING_X * 44, instructionsY, COLOR_RED, "editar");
+                    Draw_DrawString(10 + SPACING_X * 44, instructionsY, COLOR_RED, "edit");
                 // ------------------------------------------
 
                 // Location
                 const u32 infoY = instructionsY + SPACING_Y;
                 viewerY += SPACING_Y;
                 if(codeAvailable && heapAvailable)
-                {    
-                    Draw_DrawString(10, infoY, COLOR_WHITE, "Pulsar L o R alternara entre pila y codigo.");
+                {
+                    Draw_DrawString(10, infoY, COLOR_WHITE, "Press L or R to switch between heap and code.");
                     if((u32)menus[MENU_MODE_NORMAL].buf == heapDestAddress)
-                        Draw_DrawString(10 + SPACING_X * 31, infoY, COLOR_GREEN, "pila");
+                        Draw_DrawString(10 + SPACING_X * 31, infoY, COLOR_GREEN, "heap");
                     if((u32)menus[MENU_MODE_NORMAL].buf == codeDestAddress)
-                        Draw_DrawString(10 + SPACING_X * 40, infoY, COLOR_GREEN, "codigo");
+                        Draw_DrawString(10 + SPACING_X * 40, infoY, COLOR_GREEN, "code");
                 }
                 else
                 {
-                    Draw_DrawString(10, infoY, COLOR_WHITE, "SELECT: Dumpear memoria, START: Vista ASCII.");
+                    Draw_DrawString(10, infoY, COLOR_WHITE, "SELECT to dump memory, START to toggle ASCII view.");
                     if(ascii)
                         Draw_DrawString(10 + SPACING_X * 39, infoY, COLOR_GREEN, "ASCII");
                 }
@@ -611,9 +612,9 @@ static void ProcessListMenu_MemoryViewer(const ProcessInfo *info)
         }
 
         if(codeAvailable)
-            svcUnmapProcessMemoryEx(processHandle, codeDestAddress, codeTotalSize);
+            svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, codeDestAddress, codeTotalSize);
         if(heapAvailable)
-            svcUnmapProcessMemoryEx(processHandle, heapDestAddress, heapTotalSize);
+            svcUnmapProcessMemoryEx(CUR_PROCESS_HANDLE, heapDestAddress, heapTotalSize);
 
         svcCloseHandle(processHandle);
     }
@@ -701,7 +702,7 @@ void RosalinaMenu_ProcessList(void)
         Draw_Lock();
         if(page != pagePrev)
             Draw_ClearFramebuffer();
-        Draw_DrawString(10, 10, COLOR_TITLE, "Lista de procesos");
+        Draw_DrawString(10, 10, COLOR_TITLE, "Process list");
 
         if(gdbServer.super.running)
         {
