@@ -69,6 +69,7 @@ typedef struct {
 
     u64 hbldr3dsxTitleId;
     u32 rosalinaMenuCombo;
+    u32 pluginLoaderFlags;
     u16 screenFiltersCct;
     s16 ntpTzOffetMinutes;
 } CfgData;

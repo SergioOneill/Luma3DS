@@ -60,7 +60,9 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                 case 6:
                     *out = cfwInfo.splashDurationMsec;
                     break;
-
+                case 0x80:
+                    *out = fcramDescriptor->appRegion.regionSizeInBytes;
+                    break;
                 case 0x100:
                     *out = (s64)cfwInfo.hbldr3dsxTitleId;
                     break;
@@ -73,7 +75,9 @@ Result GetSystemInfoHook(s64 *out, s32 type, s32 param)
                 case 0x103:
                     *out = (s64)cfwInfo.ntpTzOffetMinutes;
                     break;
-
+                case 0x180:
+                    *out = cfwInfo.pluginLoaderFlags;
+                    break;
                 case 0x200: // isRelease
                     *out = cfwInfo.flags & 1;
                     break;

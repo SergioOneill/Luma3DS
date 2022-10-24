@@ -35,6 +35,7 @@
 #include "menus/n3ds.h"
 #include "menus/cheats.h"
 #include "minisoc.h"
+#include "plugin.h"
 #include "menus/screen_filters.h"
 
 u32 menuCombo = 0;
@@ -223,6 +224,9 @@ MyThread *menuCreateThread(void)
     return &menuThread;
 }
 
+u32 menuCombo;
+u32 g_blockMenuOpen = 0;
+
 void menuThreadMain(void)
 {
     if(isN3DS)
@@ -252,12 +256,18 @@ void menuThreadMain(void)
 
         Cheat_ApplyCheats();
 
-        if((scanHeldKeys() & menuCombo) == menuCombo)
+        if(((scanHeldKeys() & menuCombo) == menuCombo) && !g_blockMenuOpen)
         {
             menuEnter();
             if(isN3DS) N3DSMenu_UpdateStatus();
+            PluginLoader__UpdateMenu();
             menuShow(&rosalinaMenu);
             menuLeave();
+        }
+
+        if (saveSettingsRequest) {
+            SaveSettings();
+            saveSettingsRequest = false;
         }
     }
 }

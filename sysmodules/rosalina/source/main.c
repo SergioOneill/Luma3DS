@@ -32,6 +32,7 @@
 #include "hbloader.h"
 #include "3dsx.h"
 #include "utils.h"
+#include "sleep.h"
 #include "MyThread.h"
 #include "menus/miscellaneous.h"
 #include "menus/debugger.h"
@@ -44,6 +45,7 @@
 #include "bootdiag.h"
 
 #include "task_runner.h"
+#include "plugin.h"
 
 bool isN3DS;
 
@@ -64,6 +66,7 @@ void __wrap_exit(int rc)
     // Kernel will take care of it all
     /*
     pmDbgExit();
+    acExit();
     fsExit();
     svcCloseHandle(*fsRegGetSessionHandle());
     srvExit();
@@ -165,6 +168,9 @@ static void handleSleepNotification(u32 notificationId)
 
 static void handleShellNotification(u32 notificationId)
 {
+    // Quick dirty fix
+    Sleep__HandleNotification(notificationId);
+    
     if (notificationId == 0x213) {
         // Shell opened
         // Note that this notification is fired on system init
@@ -224,6 +230,7 @@ static void handleRestartHbAppNotification(u32 notificationId)
 
 static const ServiceManagerServiceEntry services[] = {
     { "hb:ldr", 2, HBLDR_HandleCommands, true },
+    { "plg:ldr", 1, PluginLoader__HandleCommands, true },
     { NULL },
 };
 
@@ -241,12 +248,17 @@ static const ServiceManagerNotificationEntry notifications[] = {
     { 0x1000,                       handleNextApplicationDebuggedByForce    },
     { 0x2000,                       handlePreTermNotification               },
     { 0x3000,                       handleRestartHbAppNotification          },
+    { 0x1001,                       PluginLoader__HandleKernelEvent         },
     { 0x000, NULL },
 };
 
+// Some changes to commit
 int main(void)
 {
     static u8 ipcBuf[0x100] = {0};  // used by both err:f and hb:ldr
+
+    Sleep__Init();
+    PluginLoader__Init();
 
     // Set up static buffers for IPC
     u32* bufPtrs = getThreadStaticBuffers();

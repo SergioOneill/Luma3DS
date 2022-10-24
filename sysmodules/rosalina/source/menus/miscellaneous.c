@@ -36,6 +36,7 @@
 #include "minisoc.h"
 #include "ifile.h"
 #include "pmdbgext.h"
+#include "plugin.h"
 #include "process_patches.h"
 #include "screen_filters.h"
 #include "config_template_ini.h"
@@ -98,6 +99,7 @@ typedef struct CfgData {
 
     u64 hbldr3dsxTitleId;
     u32 rosalinaMenuCombo;
+    u32 pluginLoaderFlags;
     u16 screenFiltersCct;
     s16 ntpTzOffetMinutes;
 } CfgData;
@@ -116,6 +118,7 @@ Menu miscellaneousMenu = {
     }
 };
 int lastNtpTzOffset = 0;
+bool saveSettingsRequest = false;
 
 void MiscellaneousMenu_SwitchBoot3dsxTargetTitle(void)
 {
@@ -294,7 +297,7 @@ static size_t saveLumaIniConfigToStr(char *out, const CfgData *cfg)
         splashPosStr, (unsigned int)cfg->splashDurationMsec,
         pinNumDigits, n3dsCpuStr,
 
-        cfg->hbldr3dsxTitleId, rosalinaMenuComboStr,
+        cfg->hbldr3dsxTitleId, rosalinaMenuComboStr, (int)(cfg->pluginLoaderFlags & 1),
         (int)cfg->screenFiltersCct, (int)cfg->ntpTzOffetMinutes,
 
         (int)CONFIG(PATCHUNITINFO), (int)CONFIG(DISABLEARM11EXCHANDLERS),
@@ -304,7 +307,11 @@ static size_t saveLumaIniConfigToStr(char *out, const CfgData *cfg)
     return n < 0 ? 0 : (size_t)n;
 }
 
-void MiscellaneousMenu_SaveSettings(void)
+void RequestSaveSettings(void) {
+    saveSettingsRequest = true;
+}
+
+Result  SaveSettings(void)
 {
     char inibuf[0x2000];
 
@@ -342,6 +349,7 @@ void MiscellaneousMenu_SaveSettings(void)
     configData.splashDurationMsec = splashDurationMsec;
     configData.hbldr3dsxTitleId = Luma_SharedConfig->hbldr_3dsx_tid;
     configData.rosalinaMenuCombo = menuCombo;
+    configData.pluginLoaderFlags = PluginLoader__IsEnabled();
     configData.screenFiltersCct = (u16)screenFiltersCurrentTemperature;
     configData.ntpTzOffetMinutes = (s16)lastNtpTzOffset;
 
@@ -357,6 +365,14 @@ void MiscellaneousMenu_SaveSettings(void)
     if(R_SUCCEEDED(res))
         res = IFile_Write(&file, &total, inibuf, n, 0);
     IFile_Close(&file);
+
+    IFile_Close(&file);
+    return res;
+}
+
+void MiscellaneousMenu_SaveSettings(void)
+{
+    Result res = SaveSettings();
 
     Draw_Lock();
     Draw_ClearFramebuffer();
